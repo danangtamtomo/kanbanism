@@ -1,0 +1,92 @@
+* {
+  box-sizing: border-box;
+  font-weight: bold;
+  background: burlywood;
+
+}
+body {
+  font-family: 'Raleway', sans-serif;
+}
+
+p {
+    padding: 10px;
+}
+
+button {
+    background: #BD4D3C;
+    padding: 5px;
+    border: 0px none;
+    box-shadow: 1px 1px 0px #ccc;
+    color: #FFDC4D;
+    border-radius: 10px 0px 10px 0px;
+}
+
+button:hover {
+    background: #ccc;
+    color: black;
+}
+
+.ui-state-default {
+    border-radius: 0px 10px 0px 0px;
+    box-shadow: 1px 1px 0px #ccc;
+  min-height: 45px;
+  background: #FFDC4D;
+  margin-top: 5px;
+}
+
+.ui-state-default textarea {
+  border: 0px solid;
+  padding: 5px;
+  background: #FFDC4D;
+  font-family: 'Raleway', sans-serif;
+  font-size: 14px;
+  width: 100%;
+}
+
+.sortable div {
+  margin-bottom: 5px;
+  padding: 3px;
+}
+
+#kanban-board {
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+}
+
+
+.sortable-wrapper {
+  background: #44A5AD;
+  width: 20%;
+  padding: 5px;
+  text-align: center;
+}
+
+.sortable-header {
+    border-radius: 10px 0px 10px 0px;
+  color: azure;
+  background: #C46543;
+  padding: 10px;
+}
+
+.ghost {
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=40);
+  opacity: 0.4;
+  border-style: dashed;
+}
+
+.dragging {
+  -moz-transform: rotate(-5deg);
+  -ms-transform: rotate(-5deg);
+  -webkit-transform: rotate(-5deg);
+  transform: rotate(-5deg);
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=80);
+  opacity: 0.8;
+}
+
+.drag-place-holder {
+  height: 0px !important;
+  margin-top: -5px;
+  overflow: hidden;
+  border-bottom: 2px dashed blue;
+}

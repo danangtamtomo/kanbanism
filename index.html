@@ -3,28 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <title>Document</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.4.3/pixi.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
     <style>* {padding: 0; margin: 0}</style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script
+  src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"
+  integrity="sha256-eGE6blurk5sHj+rmkfsGYeKyZx3M4bG+ZlFyA7Kns7E="
+  crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@2.2.5"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 </head>
 <body>
-    <script type="text/javascript">
-        var type = "WebGL"
-        if(!PIXI.utils.isWebGLSupported()){
-          type = "canvas"
+    <h1 style="margin-bottom: 10px;">
+        Kanbanism
+    </h1>
+  <div id='kanban-board'>
+  <button @click="saveKanban">Save</button>  
+  <button @click="addBacklog">Add Backlog</button>  
+  <div class='sortable-wrapper'>
+    <div class="sortable-header">Backlog</div>
+    <div class='sortable' id="backlog">
+      <div class='ui-state-default' v-for="backlog in kanban.backlogs">
+          <button @click="deleteKan(backlog.position,'backlogs')">X</button>
+          <textarea v-model="backlog.value" wrap="hard">{{ backlog.value }}</textarea>
+          <p><button @click="move('next', backlog.position, 'backlogs')">Next</button></p>
+      </div>
+    </div>
+  </div>
+  <div class='sortable-wrapper'>
+    <div class="sortable-header">ToDo</div>
+    <div class='sortable' id="todo">
+      <div class='ui-state-default' v-for="todo in kanban.todos">
+          <button @click="deleteKan(todo.position,'todos')">X</button>
+          <textarea v-model="todo.value" wrap="hard">{{ todo.value }}</textarea>
+          <p><button @click="move('prev', todo.position,'todos')">Prev</button>
+          <button @click="move('next', todo.position, 'todos')">Next</button></p>
+      </div>
+    </div>
+  </div>
+  <div class='sortable-wrapper'>
+    <div class="sortable-header">In Progress</div>
+    <div class='sortable' id="progress">
+      <div class='ui-state-default' v-for="progress in kanban.progress">
+          <button @click="deleteKan(progress.position,'progress')">X</button>
+          <textarea v-model="progress.value" wrap="hard">{{ progress.value }}</textarea>
+          <p><button @click="move('prev', progress.position,'progress')">Prev</button>
+          <button @click="move('next', progress.position, 'progress')">Next</button></p>
+      </div>
+    </div>
+  </div>
+  <div class='sortable-wrapper'>
+    <div class="sortable-header">Test</div>
+    <div class='sortable' id="test">
+      <div class='ui-state-default' v-for="test in kanban.tests" >
+          <button @click="deleteKan(test.position,'tests')">X</button>
+          <textarea v-model="test.value" wrap="hard">{{ test.value }}</textarea>
+          <p><button @click="move('prev', test.position,'tests')">Prev</button>
+          <button @click="move('next', test.position, 'tests')">Next</button></p>
+      </div>
+    </div>
+  </div>
+  <div class='sortable-wrapper'>
+    <div class="sortable-header">Completed</div>
+    <div class='sortable' id="completed">
+      <div class='ui-state-default' v-for="complete in kanban.complete">
+          <button @click="deleteKan(complete.position,'complete')">X</button>
+          <textarea v-model="complete.value" wrap="hard">{{ complete.value }}</textarea>
+          <p><button @click="move('prev', complete.position,'complete')">Prev</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+  <script src="script.js"></script>
+
+  <script>
+    Vue.config.devtools = true
+    let app = new Vue({
+        el: '#kanban-board',
+        data: {
+            kanban: {
+                backlogs: [],
+                todos: [],
+                progress: [],
+                tests: [],
+                complete: []
+            }
+        },
+        methods: {
+            addBacklog: function () {
+                this.kanban.backlogs.push({
+                    position: this.makePosId(),
+                    value: 'Edit me',
+                    group: 'backlogs'
+                })
+            },
+            move: function (direction, position, origin) {
+                let kanban = []
+                for(key in this.kanban) kanban.push(key)
+                if (direction === 'next') {
+                    this.kanban[origin].forEach((val, index) => {
+                        console.log(position+' comp '+ val.position+' ind '+index);
+                        console.log(this.kanban[origin].slice(index, index+1));
+                        if(val.position === position) {
+                            let grab = this.kanban[origin].slice(index, index+1)
+                            let indexOfOrigin = kanban.indexOf(origin)
+                            grab[0].group = kanban[indexOfOrigin+1]
+                            this.kanban[kanban[indexOfOrigin+1]].push(grab[0]) 
+                            this.kanban[origin].splice(index, 1)
+                        }
+                    })
+                } else {
+                    this.kanban[origin].forEach((val, index) => {
+                        if(val.position === position) {
+                            let grab = this.kanban[origin].slice(index, index+1)
+                            let indexOfOrigin = kanban.indexOf(origin)
+                            grab[0].group = kanban[indexOfOrigin-1]
+                            this.kanban[kanban[indexOfOrigin-1]].push(grab[0]) 
+                            this.kanban[origin].splice(index, 1)
+                        }
+                    })
+                } 
+            },
+            deleteKan: function (position, origin) {
+                this.kanban[origin].splice(position-1, 1)
+            },
+            saveKanban: function () {
+                axios.post('http://localhost:3000/save/kanban', {kanban: this.kanban})
+                    .then((res) => {
+                        console.log(res.message)
+                    })
+                    .catch((err) => {
+                        console.log(err.message);
+                    })
+            },
+            getKanban: function () {
+                axios.get('http://localhost:3000/kanban')               
+                    .then((res) => {
+                        res.data.map((kanban) => {
+                            app.kanban[kanban.group].push(kanban)
+                        })
+                    })
+                    .catch((err) => {
+                        console.log(err.message)
+                    })
+            },
+            makePosId: function ()
+            {
+                var text = "";
+                var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+                for( var i=0; i < 5; i++ )
+                    text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+                return text;
+            }
         }
-        
-        PIXI.utils.sayHello(type)
-        
-        var renderer = PIXI.autoDetectRenderer(256, 256)
-        
-        document.body.appendChild(renderer.view)
-        
-        renderer.backgroundColor = 0x061639
-        var stage = new PIXI.Container()
-        
-        renderer.render(stage)
-        
-        
+    })
+
+    app.getKanban()    
 
   </script>
 </body>
